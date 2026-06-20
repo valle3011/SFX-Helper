@@ -86,3 +86,73 @@ DEFAULTS = {
     "outline": "#ffffff",
     "outline_px": 8,
 }
+
+# ---------------------------------------------------------------------
+# 5) EINGEBAUTE FONT-REGELN  (Stichwort -> Font(s), nach Stimmung gruppiert)
+# ---------------------------------------------------------------------
+# Diese Regeln sind sofort aktiv: Tippst du oben ein passendes SFX-Wort,
+# schlägt der Docker die zugehörigen Fonts vor (nach Gruppen sortiert).
+# Eigene Regeln im Docker kommen zusätzlich dazu und überschreiben nichts.
+#
+# Die Stichwörter decken englische UND romanisierte japanische Onomatopöie
+# ab (z. B. "doki" = Herzklopfen, "gashan" = Klirren, "zan" = Schnitt).
+# Lange/gedehnte Schreibweisen werden automatisch erkannt ("BOOOOM" -> boom).
+#
+# WICHTIG: Die Fonts müssen in Windows installiert sein, damit Krita sie
+# anzeigt. Die hier genutzten Namen sind die echten Familiennamen der
+# Blambot-Comic-Schriften (BadaBoom, Blambot FXPro, Astounder usw.).
+SFX_RULES = [
+    {"group": "Boom / Impact",
+     "keywords": ["boom", "kaboom", "bam", "blam", "bang", "blast",
+                  "explosion", "explode", "doon", "dosun", "dgah", "gogo"],
+     "fonts": ["BadaBoom Pro BB", "A.C.M.E. Explosive",
+               "Astounder Squared BB"]},
+    {"group": "Hit / Punch",
+     "keywords": ["pow", "smack", "whack", "thwack", "punch", "bonk", "thud",
+                  "doki", "doka", "baki", "doga", "gusha", "boko", "buchi"],
+     "fonts": ["BeatDown BB", "Astounder Squared BB"]},
+    {"group": "Crash / Break",
+     "keywords": ["crash", "smash", "crack", "shatter", "break", "crunch",
+                  "gashan", "gachan", "bari", "mishi", "pakin"],
+     "fonts": ["Autodestruct BB", "A.C.M.E. Explosive"]},
+    {"group": "Slash / Cut",
+     "keywords": ["slash", "slice", "cut", "shing", "shink", "swish", "swoosh",
+                  "zan", "zash", "suba", "shaki", "zubaa"],
+     "fonts": ["Brushzerker BB", "Armor Piercing BB"]},
+    {"group": "Gun / Metal",
+     "keywords": ["shot", "gun", "clang", "ping", "ratatat", "kachak",
+                  "kakin", "gakin", "chakin"],
+     "fonts": ["Bulletproof BB", "Armor Piercing BB"]},
+    {"group": "Electric / Energy",
+     "keywords": ["zap", "bzzt", "buzz", "spark", "crackle", "bachi",
+                  "biri", "pachi", "bishi"],
+     "fonts": ["BlackHole BB", "Android Nation BB"]},
+    {"group": "Sci-fi / Tech",
+     "keywords": ["beep", "boop", "whirr", "vwoom", "hum", "mecha", "robot",
+                  "wiin"],
+     "fonts": ["Android Nation BB", "Astrogator BB"]},
+    {"group": "Magic / Glow",
+     "keywords": ["magic", "glow", "shimmer", "sparkle", "kira", "pika",
+                  "fwoosh", "vwoo", "fuwa"],
+     "fonts": ["Arcanum BB", "Astounder Round BB"]},
+    {"group": "Shout / Loud",
+     "keywords": ["shout", "yell", "roar", "waaah", "gyaa", "uwaa",
+                  "raaah", "gao", "gaaah", "doooh"],
+     "fonts": ["Always Angry BB", "BigBadBold BB"]},
+    {"group": "Horror / Scary",
+     "keywords": ["scream", "kyaa", "blood", "gore", "creak", "drip", "doku",
+                  "zoku", "gurgle", "zawa", "giri"],
+     "fonts": ["BloodyMurder BB", "Afterlife BB"]},
+    {"group": "Monster / Zombie",
+     "keywords": ["groan", "growl", "gah", "braain", "ugh", "ghaa",
+                  "gao"],
+     "fonts": ["Braaains BB", "Afterlife BB"]},
+    {"group": "Soft / Quiet",
+     "keywords": ["whisper", "soft", "hush", "mutter", "mumble",
+                  "pata", "koso", "suya", "sniff", "potsu"],
+     "fonts": ["Blambot Casual", "Anime Ace 2.0 BB"]},
+    {"group": "Cute / Light",
+     "keywords": ["pop", "poof", "fwip", "tap", "pomf", "puni", "fluff",
+                  "twinkle", "boing", "pyon"],
+     "fonts": ["Astounder Round BB", "Blambot Casual"]},
+]

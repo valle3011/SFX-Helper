@@ -1,43 +1,110 @@
-# Manga SFX Typesetter – Krita-Docker
+# Manga SFX Typesetter – Krita docker
 
-Ein dockbares Panel für Krita 5.x, mit dem du schnell gestaltete Manga-SFX
-(Sound Effects) mit Outline in eine **Vektor-Ebene** setzt – ohne Font,
-Farbe und Kontur jedes Mal von Hand einzustellen.
+A dockable panel for Krita 5.x that quickly drops styled manga **SFX** (sound
+effects) with an outline onto a **vector layer** – without setting the font,
+color and outline by hand every time.
 
-## Funktionen
-- Texteingabe für das SFX-Wort
-- Font-Dropdown mit allen installierten Fonts (durchsuchbar) + Favoritenliste
-- Regler/Felder für Schriftgröße, Füllfarbe, Outline-Farbe, Outline-Stärke
-- Preset-Buttons (Font + Farbe + Outline auf einen Klick)
-- „SFX einfügen“ -> erzeugt SVG-Text und fügt ihn per `addShapesFromSvg`
-  in die aktive Vektor-Ebene ein (legt sie automatisch an, falls nötig)
-- Font-Vorschläge: du legst im Docker fest, welche Font(s) zu welchem SFX-Wort
-  passen – optional in Gruppen (z. B. Shout/Scared/Normal/Leise); beim Tippen
-  erscheinen sie nach Gruppen geordnet als anklickbarer Vorschlag
-- Sprache umschaltbar: **Englisch = Standard**, Deutsch – oben im Docker
-- Komfort: Live-Vorschau der Schrift, GROSSBUCHSTABEN-, Fett- und Kursiv-Schalter,
-  und der Docker merkt sich den zuletzt genutzten Stil über Neustarts
-- „Zurücksetzen"-Button: Stil auf Standardwerte – optional auch alle eigenen
-  Presets + Font-Regeln löschen
-- Import/Export: eigene Presets + Font-Regeln (mit Gruppen) als `.json` sichern,
-  teilen und wieder einlesen (Zusammenführen oder Ersetzen)
+> A German version of this README is available in
+> [`README.de.md`](README.de.md). The plugin's UI is bilingual
+> (**English = default**, German), switchable at the top of the docker.
+
+## Features
+- Text field for the SFX word
+- Font dropdown with every installed font (searchable) + a favorites list
+- Inputs for font size, fill color, outline color and outline width
+- Preset buttons (font + color + outline in one click)
+- **Insert SFX** -> builds SVG text and adds it to the active vector layer via
+  `addShapesFromSvg` (creating the layer automatically if needed)
+- **Built-in smart font suggestions** (new): out of the box, typing an SFX word
+  suggests matching fonts grouped by mood (see *Built-in SFX rules* below). You
+  can still add your own rules on top.
+- Font suggestions: define in the docker which font(s) suit which SFX word –
+  optionally in groups (e.g. Shout / Scared / Normal / Soft); as you type, the
+  matching suggestions appear grouped and clickable
+- **Adjustable layout** (new): resize or hide parts of the docker (see
+  *Layout & sizes* below)
+- Language switch: **English = default**, German – at the top of the docker
+- Convenience: live font preview, UPPERCASE / bold / italic toggles, and the
+  docker remembers the last used style across restarts
+- **Reset** button: style back to defaults – optionally also delete all your own
+  presets + font rules
+- Import / Export: save your presets + font rules (with groups) as `.json`,
+  share them and read them back (merge or replace)
+
+---
+
+## Built-in SFX rules (smart suggestions)
+
+The plugin now ships with a set of **built-in font rules**. As soon as you type
+an SFX word, it suggests fitting fonts, grouped by what kind of sound it is:
+
+| Group | Example words | Suggested fonts |
+| --- | --- | --- |
+| Boom / Impact | boom, kaboom, bam, blam, blast, *doon* | BadaBoom Pro BB, A.C.M.E. Explosive, Astounder Squared BB |
+| Hit / Punch | pow, smack, thud, *doki*, *baki* | BeatDown BB, Astounder Squared BB |
+| Crash / Break | crash, smash, crack, *gashan*, *gachan* | Autodestruct BB, A.C.M.E. Explosive |
+| Slash / Cut | slash, slice, shing, *zan*, *zubaa* | Brushzerker BB, Armor Piercing BB |
+| Gun / Metal | shot, clang, ping, *kakin*, *gakin* | Bulletproof BB, Armor Piercing BB |
+| Electric / Energy | zap, buzz, spark, *bachi*, *biri* | BlackHole BB, Android Nation BB |
+| Sci-fi / Tech | beep, boop, whirr, mecha, robot | Android Nation BB, Astrogator BB |
+| Magic / Glow | glow, sparkle, *kira*, *pika*, *fuwa* | Arcanum BB, Astounder Round BB |
+| Shout / Loud | shout, roar, *gyaa*, *uwaa*, *gao* | Always Angry BB, BigBadBold BB |
+| Horror / Scary | scream, blood, drip, *doku*, *zawa* | BloodyMurder BB, Afterlife BB |
+| Monster / Zombie | groan, growl, *braain*, *ghaa* | Braaains BB, Afterlife BB |
+| Soft / Quiet | whisper, hush, mutter, *koso*, *suya* | Blambot Casual, Anime Ace 2.0 BB |
+| Cute / Light | pop, poof, tap, *pomf*, *pyon* | Astounder Round BB, Blambot Casual |
+
+Both English and **romanized Japanese onomatopoeia** are recognized, and the
+matching is **elongation-aware**: `BOOM`, `BOOOOM` and `ka-boom!` all match the
+same rule (repeated letters and punctuation are normalized away).
+
+> These rules reference the **Blambot comic SFX fonts** (BadaBoom, Blambot
+> FXPro, Astounder, Brushzerker, …). For Krita to actually render them, the
+> fonts must be **installed in your system**. If one isn't installed, the
+> suggestion still appears but Krita will fall back to a default font – just
+> install the font (or point the rule at one you have).
+
+The built-in rules are shown in the **Font suggestions** section (with a
+*built-in* tooltip; click one to apply its font). They cannot be deleted, but
+you can add your own rules next to them, and your rules can extend a built-in
+group. To change the rule set itself, edit `SFX_RULES` in
+[`mangasfx/config.py`](mangasfx/config.py).
+
+---
+
+## Layout & sizes (customizing the docker)
+
+Click the **⚙ Layout & sizes** button near the top of the docker to open a
+small panel where you can:
+
+- **Preview** – show/hide it and set its height in pixels (e.g. if you find it
+  too tall or don't need it),
+- **Suggestions**, **Presets** and **Font rules** – show or hide each section.
+
+**Reset layout** restores the defaults. Your choices are remembered across
+restarts. The docker is in a scroll area, so hiding or resizing parts never
+clips anything.
+
+The docker also **adapts to the dock width** (like TypeR): drag the dock
+narrower or wider and the controls follow. The font dropdown and the rule /
+suggestion buttons no longer force a fixed wide minimum — long rule labels are
+shortened (the full text stays in the tooltip), so a narrow dock stays usable.
 
 ---
 
 ## Installation (Windows, Krita 5.x)
 
-1. **Resource-Ordner öffnen**
-   Krita -> *Einstellungen ▸ Ressourcen verwalten… ▸ Ressourcenordner öffnen*.
-   Alternativ direkt im Explorer:
-   `C:\Users\<DU>\AppData\Roaming\krita\`
+1. **Open the resource folder**
+   Krita -> *Settings ▸ Manage Resources… ▸ Open Resource Folder*.
+   Or directly in Explorer: `C:\Users\<YOU>\AppData\Roaming\krita\`
 
-2. Darin in den Ordner **`pykrita`** wechseln (falls nicht vorhanden: anlegen).
+2. Go into the **`pykrita`** folder (create it if it does not exist).
 
-3. **Hineinkopieren** (genau diese zwei Dinge):
+3. **Copy in** exactly these two things:
    ```
    pykrita\
-     ├─ mangasfx.desktop      <- die Datei
-     └─ mangasfx\             <- der ganze Ordner mit allen .py-Dateien
+     ├─ mangasfx.desktop      <- the file
+     └─ mangasfx\             <- the whole folder with all .py files
           ├─ __init__.py
           ├─ config.py
           ├─ i18n.py
@@ -45,108 +112,120 @@ Farbe und Kontur jedes Mal von Hand einzustellen.
           ├─ svg_builder.py
           └─ sfx_docker.py
    ```
-   Wichtig: `mangasfx.desktop` liegt **neben** dem Ordner `mangasfx\`,
-   nicht darin.
+   Important: `mangasfx.desktop` sits **next to** the `mangasfx\` folder, not
+   inside it.
 
-4. **Krita neu starten.**
+   On Linux/macOS the resource folder is
+   `~/.local/share/krita/` or `~/Library/Application Support/krita/`.
 
-5. **Plugin aktivieren**
-   *Einstellungen ▸ Krita einrichten… ▸ Python-Plugin-Manager* ->
-   Häkchen bei **„Manga SFX Typesetter“** -> OK -> **Krita erneut neu starten**.
+4. **Restart Krita.**
 
-6. **Docker einblenden**
-   *Einstellungen ▸ Andockbare Dialoge ▸ Manga SFX*.
+5. **Enable the plugin**
+   *Settings ▸ Configure Krita… ▸ Python Plugin Manager* -> tick
+   **"Manga SFX Typesetter"** -> OK -> **restart Krita again**.
 
-> Hinweis: Es muss eine Python-fähige Krita-Version sein (der normale
-> Windows-Build von krita.org ist das standardmäßig).
+6. **Show the docker**
+   *Settings ▸ Dockers ▸ Manga SFX*.
 
----
-
-## Benutzung
-1. Dokument offen haben, SFX-Wort eintippen.
-2. Font/Größe/Farben wählen **oder** ein Preset klicken.
-3. **„SFX einfügen“** (oder Enter im Textfeld).
-   Ist gerade keine Vektor-Ebene aktiv, wird automatisch eine Ebene „SFX“
-   angelegt. Der Text erscheint oben links – danach frei verschiebbar.
+> Note: this needs a Python-enabled build of Krita (the regular Windows build
+> from krita.org is, by default).
 
 ---
 
-## Selbst erweitern – alles in `config.py`
+## Usage
+1. Have a document open and type the SFX word.
+2. Choose font / size / colors **or** click a preset.
+3. **Insert SFX** (or press Enter in the text field).
+   If no vector layer is active, a layer named "SFX" is created automatically.
+   The text appears in the top-left – move it freely afterwards.
 
-**Fonts:** Das Dropdown enthält automatisch ALLE installierten System-Fonts
-(einfach reintippen und suchen). `SFX_FONTS` ist nur deine Favoriten-Liste
-für den Schnellzugriff oben im Dropdown – der erste Eintrag ist der Standard.
-Alle Fonts ausblenden und nur Favoriten zeigen: `SHOW_ALL_SYSTEM_FONTS = False`.
+---
+
+## Customizing – everything in `config.py`
+
+**Fonts:** the dropdown automatically contains ALL installed system fonts (just
+type to search). `SFX_FONTS` is only your favorites list for quick access at the
+top of the dropdown – the first entry is the default. To hide all system fonts
+and show only favorites: `SHOW_ALL_SYSTEM_FONTS = False`.
 ```python
 SFX_FONTS = [
-    "CC Wild Words",         # Standard
-    "Mein Lieblings-SFX",    # <- neu als Favorit
+    "CC Wild Words",        # default
+    "My favorite SFX",      # <- new favorite
 ]
 ```
 
-**Presets direkt im Docker anlegen (empfohlen):**
-1. Font, Größe, Farben und Outline einstellen.
-2. **„＋ Aktuelles als Preset speichern"** klicken und einen Namen vergeben.
-3. Optional Schlüsselwörter (Komma-getrennt) angeben – tippst du so ein Wort
-   später in den SFX-Text, schlägt der Docker dieses Preset vor.
+**Create presets right in the docker (recommended):**
+1. Set font, size, colors and outline.
+2. Click **"＋ Save current as preset"** and give it a name.
+3. Optionally add keywords (comma-separated) – type such a word into the SFX
+   text later and the docker suggests this preset.
 
-Dein Preset erscheint sofort als Button. **Rechtsklick auf ein eigenes Preset**
-öffnet ein Menü: *Umbenennen*, *Schlüsselwörter bearbeiten*, *Mit aktuellen
-Reglerwerten überschreiben* oder *Löschen*. So bearbeitest du ein Preset:
-Button anklicken (lädt die Werte) → Regler anpassen → Rechtsklick →
-*Mit aktuellen Reglerwerten überschreiben*. Gespeichert wird in den
-Krita-Einstellungen, bleibt also über Neustarts erhalten.
+Your preset shows up as a button immediately. **Right-click one of your own
+presets** for a menu: *Rename*, *Edit keywords*, *Overwrite with current slider
+values* or *Delete*. To edit a preset: click the button (loads its values) ->
+adjust the controls -> right-click -> *Overwrite with current slider values*.
+It is stored in Krita's settings, so it persists across restarts.
 
-**Integrierte Presets** bearbeitest du im Block `SFX_PRESETS` (`config.py`);
-`keywords` ist optional und steuert den Mood-Vorschlag:
+**Built-in presets** are edited in the `SFX_PRESETS` block (`config.py`);
+`keywords` is optional and drives the mood suggestion:
 ```python
 {
-    "name": "Donner",
-    "font": "Bangers",
-    "size": 150,
-    "fill": "#101010",
-    "outline": "#ffd400",
-    "outline_px": 7,
-    "keywords": ["donner", "rumble"],   # optional
+    "name": "Loud",
+    "font": "CC Shout Out",
+    "size": 160,
+    "fill": "#000000",
+    "outline": "#ffffff",
+    "outline_px": 8,
+    "keywords": ["boom", "crash", "bang", "explo"],   # optional
 },
 ```
 
-**Font-Vorschläge (welche Font[s] zu welchem SFX-Wort passen):**
-Abschnitt *Font-Vorschläge* im Docker → **„＋ Font-Regel hinzufügen"**:
-1. **Gruppe** wählen oder neu eintippen (z. B. `Shout`, `Scared`, `Normal`,
-   `Leise`) – so legst du für dasselbe Wort mehrere Stimmungs-Varianten an.
-   Leer lassen = ohne Gruppe.
-2. Stichwörter angeben (Komma-getrennt, z. B. `ah, aah`).
-3. Font(s) wählen: ein **durchsuchbares Font-Dropdown** + „Hinzufügen" (so kannst
-   du Namen bequem nachschlagen); die Liste bleibt frei editierbar, also auch
-   **mehrere Fonts** per Komma möglich.
+**Font suggestions (which font[s] suit which SFX word):**
+*Font suggestions* section in the docker → **"＋ Add font rule"**:
+1. Choose or type a **group** (e.g. `Shout`, `Scared`, `Normal`, `Soft`) – this
+   lets you keep several mood variants for the same word. Leave empty = no group.
+2. Enter keywords (comma-separated, e.g. `ah, aah`).
+3. Choose font(s): a **searchable font dropdown** + "Add" (so you can look names
+   up comfortably); the list stays freely editable, so **multiple fonts** via
+   commas are possible too.
 
-Beispiel: Lege für das Wort `ah` vier Regeln an – Gruppe *Shout* → lauter Font,
-*Scared* → zittriger Font, *Normal* → Standardfont, *Leise* → dünner Font.
-Tippst du oben `ah`, erscheinen die Vorschläge **nach Gruppen geordnet**
-(Klick setzt den Font). **Linksklick** auf eine Regel bearbeitet sie,
-**Rechtsklick** öffnet *Bearbeiten/Löschen*. Wird dauerhaft gespeichert.
+Example: create four rules for the word `ah` – group *Shout* → a loud font,
+*Scared* → a shaky font, *Normal* → the default font, *Soft* → a thin font. Type
+`ah` at the top and the suggestions appear **grouped** (a click sets the font).
+**Left-click** a rule to edit it, **right-click** for *Edit/Delete*. Stored
+permanently.
 
-**Presets & Regeln sichern/teilen:** Unten im Docker schreibt **Export…** deine
-eigenen Presets + Font-Regeln (inkl. Gruppen) in eine `.json`-Datei; **Import…**
-liest sie wieder ein – wahlweise *Zusammenführen* (zu Vorhandenem dazu, gleicher
-Preset-Name wird ersetzt, exakte Doppel-Regeln werden übersprungen) oder
-*Ersetzen* (alles Eigene durch die Datei überschreiben). Praktisch für Backups
-oder den Wechsel zwischen Rechnern. Integrierte Presets aus `config.py` sind
-nicht betroffen.
+**Back up / share presets & rules:** at the bottom of the docker, **Export…**
+writes your own presets + font rules (incl. groups) to a `.json` file;
+**Import…** reads them back – either *Merge* (add to what exists; a preset with
+the same name is replaced, exact duplicate rules are skipped) or *Replace*
+(overwrite all of your own with the file). Handy for backups or moving between
+machines. Built-in presets from `config.py` are not affected.
 
-Nach Änderungen an `config.py` genügt ein **Krita-Neustart**.
+After editing `config.py`, a **Krita restart** is enough.
 
 ---
 
-## Was du noch von Hand machst
-Das Plugin setzt den Text sauber – die künstlerische Platzierung bleibt
-deine Arbeit:
-- **Positionieren/Skalieren/Rotieren:** Werkzeug *Form bearbeiten* bzw.
-  *Transformieren* (Strg+T).
-- **Warpen/Perspektive** (SFX an Bewegung/Panel anpassen): Transformieren ->
-  *Verkrümmen*, *Käfig* oder *Perspektive*. Tipp: Bei starkem Warp die
-  SFX-Ebene vorher per Rechtsklick *In Pixel-Ebene umwandeln* (rastern),
-  dann verzerrt es zuverlässiger.
-- **Feinschliff:** Verlauf/Glow auf der Füllung, doppelte Outline,
-  Schlagschatten – als zusätzliche Ebenen-Effekte.
+## What you still do by hand
+The plugin sets the text cleanly – the artistic placement stays your job:
+- **Position / scale / rotate:** the *Edit Shape* or *Transform* tool (Ctrl+T).
+- **Warp / perspective** (fit the SFX to motion/panel): Transform ->
+  *Warp*, *Cage* or *Perspective*. Tip: for a strong warp, first right-click the
+  SFX layer and *Convert to Paint Layer* (rasterize); it then distorts more
+  reliably.
+- **Polish:** gradient/glow on the fill, a double outline, a drop shadow – as
+  additional layer effects.
+
+---
+
+## Project layout
+
+| File | Purpose |
+| --- | --- |
+| `mangasfx/sfx_docker.py` | Docker UI and SFX insertion |
+| `mangasfx/svg_builder.py` | Builds the outlined SVG text |
+| `mangasfx/presets_store.py` | Loads/saves user presets + font rules |
+| `mangasfx/config.py` | Favorite fonts, built-in presets, defaults |
+| `mangasfx/i18n.py` | UI translations (English / German) |
+| `mangasfx/__init__.py` | Registers the docker with Krita |
+| `mangasfx.desktop` | Krita plugin descriptor |

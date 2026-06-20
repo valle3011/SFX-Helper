@@ -7,12 +7,13 @@ Komfort: Live-Vorschau, GROSSBUCHSTABEN-Schalter, merkt sich den zuletzt
 genutzten Stil über Neustarts.
 """
 import json
+import re
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit,
     QComboBox, QPushButton, QSpinBox, QSlider, QColorDialog, QScrollArea,
     QCompleter, QInputDialog, QMessageBox, QMenu, QCheckBox,
-    QDialog, QDialogButtonBox, QFileDialog,
+    QDialog, QDialogButtonBox, QFileDialog, QSizePolicy,
 )
 from PyQt5.QtGui import QColor, QFontDatabase, QFont
 from PyQt5.QtCore import Qt
@@ -20,18 +21,52 @@ from PyQt5.QtCore import Qt
 from krita import Krita, DockWidget
 
 from .config import (
-    SFX_FONTS, SFX_PRESETS, DEFAULTS, SHOW_ALL_SYSTEM_FONTS,
+    SFX_FONTS, SFX_PRESETS, SFX_RULES, DEFAULTS, SHOW_ALL_SYSTEM_FONTS,
 )
 from .svg_builder import build_sfx_svg
 from .presets_store import (
     load_user_presets, save_user_presets, load_font_rules, save_font_rules,
     load_language, save_language, load_settings, save_settings,
+    load_view, save_view,
 )
 from .i18n import tr, LANGUAGES
 
 
+# Gedehnte SFX-Schreibweisen normalisieren, damit "BOOOOM", "BOOM" und
+# "GASHAAAN" alle gleich behandelt werden.
+_RUN_RE = re.compile(r"(.)\1+")          # jede Wiederholung eines Zeichens
+
+
+def normalize_sfx(text):
+    """Vereinheitlicht ein SFX-Wort fürs Stichwort-Matching:
+    klein schreiben, jeden Lauf gleicher Zeichen auf EIN Zeichen stauchen
+    ("booooom"->"bom", "gashaaan"->"gashan"), und alles außer Buchstaben/
+    Ziffern entfernen ("ka-boom!"->"kabom"). Stichwort und Text werden gleich
+    behandelt, daher matchen unterschiedlich gedehnte Schreibweisen sicher."""
+    s = (text or "").lower()
+    s = _RUN_RE.sub(r"\1", s)
+    return re.sub(r"[^a-z0-9]+", "", s)
+
+
+def keyword_matches(keyword, text_norm):
+    """True, wenn das (gestauchte) Stichwort im gestauchten Text steckt.
+    Sehr kurze Reste (< 2 Zeichen) werden ignoriert, um breite Fehltreffer
+    zu vermeiden."""
+    kw = normalize_sfx(keyword)
+    return len(kw) >= 2 and kw in text_norm
+
+
 class MangaSFXDocker(DockWidget):
     """Dockbares Panel zum schnellen Setzen von Manga-SFX."""
+
+    # Standardwerte für das Layout-Panel (Größen + ein-/ausblenden)
+    _VIEW_DEFAULTS = {
+        "open": False,
+        "preview_show": True, "preview_h": 56,
+        "suggest_show": True,
+        "presets_show": True,
+        "rules_show": True,
+    }
 
     def __init__(self):
         super().__init__()
@@ -39,8 +74,17 @@ class MangaSFXDocker(DockWidget):
         self._user_presets = load_user_presets()  # eigene Presets (persistiert)
         self._font_rules = load_font_rules()      # Stichwort -> Font(s) (persistiert)
         self._pending_state = load_settings()     # zuletzt genutzter Stil
+        self._view = self._load_view_merged()     # Layout-/Anzeige-Einstellungen
         self.setWindowTitle(self.t("window_title"))
         self._build_ui()
+
+    def _load_view_merged(self):
+        """Gespeicherte View-Einstellungen mit den Standards auffüllen."""
+        v = dict(self._VIEW_DEFAULTS)
+        saved = load_view()
+        if isinstance(saved, dict):
+            v.update({k: saved[k] for k in saved if k in v})
+        return v
 
     # ------------------------------------------------------------------
     # Pflicht-Override der DockWidget-API (wird hier nicht gebraucht)
@@ -77,6 +121,60 @@ class MangaSFXDocker(DockWidget):
         lang_row.addWidget(self.lang_combo, 1)
         layout.addLayout(lang_row)
 
+        # --- einklappbares "Layout & Größen"-Panel --------------------
+        # Lässt den Nutzer Teile des Dockers vergrößern/verkleinern oder ganz
+        # ausblenden; die Wahl wird über Neustarts gemerkt.
+        self.view_toggle = QPushButton(self.t("view_toggle"))
+        self.view_toggle.setCheckable(True)
+        self.view_toggle.setChecked(bool(self._view["open"]))
+        self.view_toggle.toggled.connect(self._on_view_toggle)
+        layout.addWidget(self.view_toggle)
+
+        self.view_box = QWidget()
+        vlay = QVBoxLayout()
+        vlay.setContentsMargins(6, 2, 6, 2)
+        vlay.setSpacing(4)
+        self.view_box.setLayout(vlay)
+        hint = QLabel(self.t("view_hint"))
+        hint.setWordWrap(True)
+        hint.setStyleSheet("color: gray;")
+        vlay.addWidget(hint)
+
+        vgrid = QGridLayout()
+        vgrid.setHorizontalSpacing(8)
+        self.v_preview_chk = QCheckBox(self.t("view_preview"))
+        self.v_preview_chk.setChecked(bool(self._view["preview_show"]))
+        self.v_preview_h = QSpinBox()
+        self.v_preview_h.setRange(28, 600)
+        self.v_preview_h.setSingleStep(8)
+        self.v_preview_h.setSuffix(" px")
+        self.v_preview_h.setValue(int(self._view["preview_h"]))
+        vgrid.addWidget(self.v_preview_chk, 0, 0)
+        vgrid.addWidget(self.v_preview_h, 0, 1)
+        self.v_suggest_chk = QCheckBox(self.t("view_suggest"))
+        self.v_suggest_chk.setChecked(bool(self._view["suggest_show"]))
+        vgrid.addWidget(self.v_suggest_chk, 1, 0)
+        self.v_presets_chk = QCheckBox(self.t("view_presets"))
+        self.v_presets_chk.setChecked(bool(self._view["presets_show"]))
+        vgrid.addWidget(self.v_presets_chk, 2, 0)
+        self.v_rules_chk = QCheckBox(self.t("view_rules"))
+        self.v_rules_chk.setChecked(bool(self._view["rules_show"]))
+        vgrid.addWidget(self.v_rules_chk, 3, 0)
+        vgrid.setColumnStretch(0, 1)
+        vlay.addLayout(vgrid)
+
+        self.view_reset_btn = QPushButton(self.t("view_reset"))
+        self.view_reset_btn.clicked.connect(self._on_view_reset)
+        vlay.addWidget(self.view_reset_btn)
+        layout.addWidget(self.view_box)
+        self.view_box.setVisible(self.view_toggle.isChecked())
+
+        # nach dem Setzen der Startwerte verbinden (sonst feuert es beim Aufbau)
+        for _w in (self.v_preview_chk, self.v_suggest_chk,
+                   self.v_presets_chk, self.v_rules_chk):
+            _w.toggled.connect(self._on_view_changed)
+        self.v_preview_h.valueChanged.connect(self._on_view_changed)
+
         # --- 1) Texteingabe -------------------------------------------
         layout.addWidget(self._heading(self.t("sfx_text")))
         self.text_input = QLineEdit()
@@ -100,17 +198,27 @@ class MangaSFXDocker(DockWidget):
         opt_grid.setColumnStretch(2, 1)
         layout.addLayout(opt_grid)
 
-        # --- Live-Vorschau --------------------------------------------
-        layout.addWidget(self._heading(self.t("preview")))
+        # --- Live-Vorschau (ein-/ausblendbar) -------------------------
+        self.sec_preview = QWidget()
+        pv = QVBoxLayout()
+        pv.setContentsMargins(0, 0, 0, 0)
+        self.sec_preview.setLayout(pv)
+        pv.addWidget(self._heading(self.t("preview")))
         self.preview = QLabel("")
         self.preview.setAlignment(Qt.AlignCenter)
         self.preview.setMinimumHeight(56)
-        layout.addWidget(self.preview)
+        pv.addWidget(self.preview)
+        layout.addWidget(self.sec_preview)
 
-        # --- Live-Vorschläge zum aktuellen SFX-Wort -------------------
+        # --- Live-Vorschläge zum aktuellen SFX-Wort (ein-/ausblendbar) -
+        self.sec_suggest = QWidget()
+        sv = QVBoxLayout()
+        sv.setContentsMargins(0, 0, 0, 0)
+        self.sec_suggest.setLayout(sv)
         self.suggest_box = QVBoxLayout()
         self.suggest_box.setSpacing(3)
-        layout.addLayout(self.suggest_box)
+        sv.addLayout(self.suggest_box)
+        layout.addWidget(self.sec_suggest)
         # textChanged erst jetzt verbinden – suggest_box/preview müssen existieren
         self.text_input.textChanged.connect(self._on_text_changed)
 
@@ -145,28 +253,38 @@ class MangaSFXDocker(DockWidget):
         self.out_slider, self.out_spin = self._slider_spin_row(
             layout, self.t("outline_width"), 0, 60, DEFAULTS["outline_px"])
 
-        # --- 4) Presets (integriert + selbst angelegte) ---------------
-        layout.addWidget(self._heading(self.t("presets")))
+        # --- 4) Presets (integriert + selbst angelegte; ein-/ausblendbar) -
+        self.sec_presets = QWidget()
+        prv = QVBoxLayout()
+        prv.setContentsMargins(0, 0, 0, 0)
+        self.sec_presets.setLayout(prv)
+        prv.addWidget(self._heading(self.t("presets")))
         self.preset_box = QVBoxLayout()
-        layout.addLayout(self.preset_box)
+        prv.addLayout(self.preset_box)
         self.save_preset_btn = QPushButton(self.t("save_preset_btn"))
         self.save_preset_btn.setToolTip(self.t("save_preset_tip"))
         self.save_preset_btn.clicked.connect(self._save_current_as_preset)
-        layout.addWidget(self.save_preset_btn)
+        prv.addWidget(self.save_preset_btn)
+        layout.addWidget(self.sec_presets)
         self._rebuild_presets()
 
-        # --- 4b) Font-Vorschläge verwalten (Stichwort -> Font(s)) -----
-        layout.addWidget(self._heading(self.t("font_suggestions")))
+        # --- 4b) Font-Vorschläge verwalten (ein-/ausblendbar) ---------
+        self.sec_rules = QWidget()
+        rlv = QVBoxLayout()
+        rlv.setContentsMargins(0, 0, 0, 0)
+        self.sec_rules.setLayout(rlv)
+        rlv.addWidget(self._heading(self.t("font_suggestions")))
         rules_hint = QLabel(self.t("rules_hint"))
         rules_hint.setWordWrap(True)
-        layout.addWidget(rules_hint)
+        rlv.addWidget(rules_hint)
         self.rules_box = QVBoxLayout()
         self.rules_box.setSpacing(3)
-        layout.addLayout(self.rules_box)
+        rlv.addLayout(self.rules_box)
         self.add_rule_btn = QPushButton(self.t("add_rule_btn"))
         self.add_rule_btn.setToolTip(self.t("add_rule_tip"))
         self.add_rule_btn.clicked.connect(self._add_font_rule)
-        layout.addWidget(self.add_rule_btn)
+        rlv.addWidget(self.add_rule_btn)
+        layout.addWidget(self.sec_rules)
         self._rebuild_rules()
 
         # --- 5) Einfügen ----------------------------------------------
@@ -210,7 +328,59 @@ class MangaSFXDocker(DockWidget):
 
         # zuletzt genutzten / vor dem Sprachwechsel gemerkten Stil anwenden
         self._apply_state(self._pending_state)
+        self._apply_view()
         self._update_preview()
+
+    # ==================================================================
+    #  Layout / Anzeige (Größen + ein-/ausblenden)
+    # ==================================================================
+    def _apply_view(self):
+        """Sichtbarkeit + Vorschauhöhe gemäß den View-Einstellungen setzen."""
+        self.sec_preview.setVisible(self.v_preview_chk.isChecked())
+        h = self.v_preview_h.value()
+        self.preview.setMinimumHeight(h)
+        self.preview.setMaximumHeight(h)
+        self.v_preview_h.setEnabled(self.v_preview_chk.isChecked())
+        self.sec_suggest.setVisible(self.v_suggest_chk.isChecked())
+        self.sec_presets.setVisible(self.v_presets_chk.isChecked())
+        self.sec_rules.setVisible(self.v_rules_chk.isChecked())
+
+    def _capture_view(self):
+        return {
+            "open": self.view_toggle.isChecked(),
+            "preview_show": self.v_preview_chk.isChecked(),
+            "preview_h": self.v_preview_h.value(),
+            "suggest_show": self.v_suggest_chk.isChecked(),
+            "presets_show": self.v_presets_chk.isChecked(),
+            "rules_show": self.v_rules_chk.isChecked(),
+        }
+
+    def _on_view_changed(self, *_a):
+        self._view = self._capture_view()
+        save_view(self._view)
+        self._apply_view()
+
+    def _on_view_toggle(self, checked):
+        self.view_box.setVisible(checked)
+        self._view = self._capture_view()
+        save_view(self._view)
+
+    def _on_view_reset(self):
+        self._view = dict(self._VIEW_DEFAULTS)
+        self._view["open"] = self.view_toggle.isChecked()  # Panel offen lassen
+        save_view(self._view)
+        widgets = (self.v_preview_chk, self.v_suggest_chk, self.v_presets_chk,
+                   self.v_rules_chk, self.v_preview_h)
+        for w in widgets:
+            w.blockSignals(True)
+        self.v_preview_chk.setChecked(self._view["preview_show"])
+        self.v_preview_h.setValue(self._view["preview_h"])
+        self.v_suggest_chk.setChecked(self._view["suggest_show"])
+        self.v_presets_chk.setChecked(self._view["presets_show"])
+        self.v_rules_chk.setChecked(self._view["rules_show"])
+        for w in widgets:
+            w.blockSignals(False)
+        self._apply_view()
 
     # ==================================================================
     #  Sprache
@@ -236,6 +406,22 @@ class MangaSFXDocker(DockWidget):
         f.setBold(True)
         lbl.setFont(f)
         return lbl
+
+    @staticmethod
+    def _elide(text, limit=34):
+        """Lange Texte für Buttons kürzen (voller Text bleibt im Tooltip)."""
+        text = text or ""
+        return text if len(text) <= limit else text[:limit - 1].rstrip() + "…"
+
+    @staticmethod
+    def _make_shrinkable(widget):
+        """Damit sich der Docker schmal ziehen lässt: das Widget darf horizontal
+        beliebig schrumpfen und erzwingt keine große Mindestbreite mehr."""
+        sp = widget.sizePolicy()
+        sp.setHorizontalPolicy(QSizePolicy.Ignored)
+        widget.setSizePolicy(sp)
+        widget.setMinimumWidth(0)
+        return widget
 
     def _slider_spin_row(self, parent_layout, title, lo, hi, value):
         """Erzeugt 'Überschrift + Slider + SpinBox' und synchronisiert beide."""
@@ -375,8 +561,9 @@ class MangaSFXDocker(DockWidget):
         grid = QGridLayout()
         grid.setSpacing(4)
         for i, preset in enumerate(self._all_presets()):
-            btn = QPushButton(preset["name"])
+            btn = QPushButton(self._elide(preset["name"], 18))
             btn.setToolTip(self._preset_tooltip(preset))
+            self._make_shrinkable(btn)
             btn.clicked.connect(lambda _c=False, p=preset: self._apply_preset(p))
             if preset.get("user"):
                 btn.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -545,6 +732,11 @@ class MangaSFXDocker(DockWidget):
             completer.setCaseSensitivity(Qt.CaseInsensitive)
             completer.setFilterMode(Qt.MatchContains)
 
+        # Breite an einer kurzen Mindestlänge ausrichten statt am längsten
+        # Fontnamen – sonst zwingt das Dropdown den ganzen Docker breit.
+        combo.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
+        combo.setMinimumContentsLength(6)
+        self._make_shrinkable(combo)
         combo.setCurrentIndex(0)
         return combo
 
@@ -579,27 +771,42 @@ class MangaSFXDocker(DockWidget):
             if group:                       # Gruppen-Überschrift (z. B. "Shout")
                 self.suggest_box.addWidget(self._mini_heading(group))
             for fnt in fonts:
-                btn = QPushButton(self.t("sug_font", name=fnt))
+                btn = QPushButton(self.t("sug_font", name=self._elide(fnt, 28)))
                 btn.setToolTip(self.t("sug_font_tip", name=fnt))
+                self._make_shrinkable(btn)
                 btn.clicked.connect(lambda _c=False, ff=fnt: self._select_font(ff))
                 self.suggest_box.addWidget(btn)
 
         if preset is not None:
             btn = QPushButton(self.t("sug_preset", name=preset["name"],
-                                     font=preset["font"]))
+                                     font=self._elide(preset["font"], 22)))
             btn.setToolTip(self.t("sug_preset_tip"))
+            self._make_shrinkable(btn)
             btn.clicked.connect(lambda _c=False, p=preset: self._apply_preset(p))
             self.suggest_box.addWidget(btn)
 
+    def _all_rules(self):
+        """(rule, is_builtin) für eingebaute (config.py) + eigene Regeln.
+
+        Für eigene Regeln wird das Original-Dict zurückgegeben, damit
+        Bearbeiten/Löschen über die Identität weiter funktioniert."""
+        rules = [(r, True) for r in SFX_RULES]
+        rules += [(r, False) for r in self._font_rules]
+        return rules
+
     def _suggested_groups(self, text):
-        """[(group, [fonts]), ...] für Regeln, deren Stichwort im Text vorkommt."""
-        low = text.lower()
-        if not low:
+        """[(group, [fonts]), ...] für Regeln, deren Stichwort im Text vorkommt.
+
+        Nutzt normalisiertes Matching, sodass gedehnte SFX ("BOOOOM") und
+        Schreibweisen mit Satzzeichen ("ka-boom!") sicher erkannt werden."""
+        norm = normalize_sfx(text)
+        if not norm:
             return []
         result = []
         index = {}
-        for rule in self._font_rules:
-            if not any(kw and kw.lower() in low for kw in rule.get("keywords", [])):
+        for rule, _builtin in self._all_rules():
+            if not any(keyword_matches(kw, norm)
+                       for kw in rule.get("keywords", [])):
                 continue
             g = rule.get("group") or ""
             if g not in index:
@@ -620,13 +827,14 @@ class MangaSFXDocker(DockWidget):
         return lbl
 
     def _find_matching_preset(self, text):
-        """Erstes Preset, dessen Schlüsselwort im Text vorkommt (oder None)."""
-        low = text.lower()
-        if not low:
+        """Erstes Preset, dessen Schlüsselwort im Text vorkommt (oder None).
+        Gleiches normalisiertes Matching wie bei den Font-Regeln."""
+        norm = normalize_sfx(text)
+        if not norm:
             return None
         for preset in self._all_presets():
             for kw in preset.get("keywords", []):
-                if kw and kw.lower() in low:
+                if keyword_matches(kw, norm):
                     return preset
         return None
 
@@ -634,9 +842,14 @@ class MangaSFXDocker(DockWidget):
     #  Font-Vorschläge (Stichwort -> Font(s)), im Docker verwaltbar
     # ==================================================================
     def _rebuild_rules(self):
-        """Baut die Regel-Buttons neu auf, nach Gruppen sortiert."""
+        """Baut die Regel-Buttons neu auf, nach Gruppen sortiert.
+
+        Eingebaute Regeln (aus config.py) sind immer dabei und nur lesbar
+        (Klick übernimmt ihren ersten Font). Eigene Regeln sind links-/rechts-
+        klickbar zum Bearbeiten/Löschen."""
         self._clear_layout(self.rules_box)
-        if not self._font_rules:
+        all_rules = self._all_rules()
+        if not all_rules:
             hint = QLabel(self.t("no_rules"))
             hint.setWordWrap(True)
             self.rules_box.addWidget(hint)
@@ -644,25 +857,37 @@ class MangaSFXDocker(DockWidget):
         for group in self._ordered_groups():
             self.rules_box.addWidget(
                 self._mini_heading(group if group else self.t("group_none")))
-            for rule in self._font_rules:
+            for rule, is_builtin in all_rules:
                 if (rule.get("group") or "") != group:
                     continue
                 kw = ", ".join(rule.get("keywords", []))
                 fo = ", ".join(rule.get("fonts", []))
-                btn = QPushButton(f"{kw}  →  {fo}")
-                btn.setToolTip(self.t("rule_tip"))
-                btn.clicked.connect(lambda _c=False, r=rule: self._edit_font_rule(r))
-                btn.setContextMenuPolicy(Qt.CustomContextMenu)
-                btn.customContextMenuRequested.connect(
-                    lambda pos, r=rule, b=btn: self._show_rule_menu(r, b, pos))
+                full = f"{kw}  →  {fo}"
+                btn = QPushButton(f"{self._elide(kw, 22)}  →  {self._elide(fo, 22)}")
+                self._make_shrinkable(btn)
+                if is_builtin:
+                    btn.setToolTip(full + "\n" + self.t("rule_builtin_tip"))
+                    fonts = rule.get("fonts") or []
+                    if fonts:
+                        first = fonts[0]
+                        btn.clicked.connect(
+                            lambda _c=False, f=first: self._select_font(f))
+                else:
+                    btn.setToolTip(full + "\n" + self.t("rule_tip"))
+                    btn.clicked.connect(
+                        lambda _c=False, r=rule: self._edit_font_rule(r))
+                    btn.setContextMenuPolicy(Qt.CustomContextMenu)
+                    btn.customContextMenuRequested.connect(
+                        lambda pos, r=rule, b=btn: self._show_rule_menu(r, b, pos))
                 self.rules_box.addWidget(btn)
 
     def _ordered_groups(self):
-        """Gruppen in Reihenfolge des ersten Auftretens; 'ohne Gruppe' ans Ende."""
+        """Gruppen in Reihenfolge des ersten Auftretens; 'ohne Gruppe' ans Ende.
+        Berücksichtigt eingebaute UND eigene Regeln."""
         order = []
         has_empty = False
-        for r in self._font_rules:
-            g = r.get("group") or ""
+        for rule, _b in self._all_rules():
+            g = rule.get("group") or ""
             if g == "":
                 has_empty = True
             elif g not in order:
@@ -672,10 +897,11 @@ class MangaSFXDocker(DockWidget):
         return order
 
     def _existing_groups(self):
-        """Vorhandene (nicht-leere) Gruppennamen – für die Auswahl im Dialog."""
+        """Vorhandene (nicht-leere) Gruppennamen – für die Auswahl im Dialog.
+        Eingebaute Gruppen sind dabei, damit eigene Regeln sie erweitern können."""
         seen = []
-        for r in self._font_rules:
-            g = (r.get("group") or "").strip()
+        for rule, _b in self._all_rules():
+            g = (rule.get("group") or "").strip()
             if g and g not in seen:
                 seen.append(g)
         return seen

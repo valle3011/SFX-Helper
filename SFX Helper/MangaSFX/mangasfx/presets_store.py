@@ -14,6 +14,7 @@ _KEY = "user_presets"
 _KEY_RULES = "font_rules"
 _KEY_SETTINGS = "last_settings"
 _KEY_LANG = "language"
+_KEY_VIEW = "view"
 
 
 def load_user_presets():
@@ -107,3 +108,22 @@ def save_settings(settings):
     """Speichert den zuletzt genutzten Stil."""
     Krita.instance().writeSetting(
         _GROUP, _KEY_SETTINGS, json.dumps(settings, ensure_ascii=False))
+
+
+def load_view():
+    """Layout-/Anzeige-Einstellungen des Dockers (Größen + ein-/ausblenden).
+    Dict, ggf. leer – der Docker füllt fehlende Werte mit Standards auf."""
+    raw = Krita.instance().readSetting(_GROUP, _KEY_VIEW, "")
+    if not raw:
+        return {}
+    try:
+        data = json.loads(raw)
+    except (ValueError, TypeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def save_view(view):
+    """Speichert die Layout-/Anzeige-Einstellungen des Dockers."""
+    Krita.instance().writeSetting(
+        _GROUP, _KEY_VIEW, json.dumps(view, ensure_ascii=False))
