@@ -4,10 +4,6 @@ A dockable panel for Krita 5.x that quickly drops styled manga **SFX** (sound
 effects) with an outline onto a **vector layer** – without setting the font,
 color and outline by hand every time.
 
-> A German version of this README is available in
-> [`README.de.md`](README.de.md). The plugin's UI is bilingual
-> (**English = default**, German), switchable at the top of the docker.
-
 ## Features
 - Text field for the SFX word
 - Font dropdown with every installed font (searchable) + a favorites list
