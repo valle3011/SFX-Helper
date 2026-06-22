@@ -20,7 +20,8 @@
       "fonts": [
         "CC Wild Words",
         "Anime Ace"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Loud",
@@ -35,7 +36,8 @@
       "fonts": [
         "Bitumen",
         "CCShoutOut Heavy"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Quiet",
@@ -48,7 +50,8 @@
       "fonts": [
         "CCWildWordsLower Italic",
         "Anime Ace Italic"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Shy/Stutter",
@@ -63,7 +66,8 @@
       ],
       "fonts": [
         "SS Bestagon"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Scared",
@@ -78,7 +82,8 @@
         "CCEvilDoings",
         "CCRoughTongue",
         "Another"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Impact",
@@ -92,7 +97,8 @@
       "fonts": [
         "CCBattleCry",
         "CCBackBeat"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Angry",
@@ -109,7 +115,8 @@
         "CCShoutOut Heavy",
         "CCBattleCry",
         "Bitumen"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Whisper",
@@ -123,7 +130,8 @@
       "fonts": [
         "CCWildWordsLower Italic",
         "Anime Ace Italic"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Shock",
@@ -138,7 +146,8 @@
       "fonts": [
         "CCShoutOut Heavy",
         "CCBattleCry"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Crying",
@@ -153,7 +162,8 @@
       "fonts": [
         "CCEvilDoings",
         "CCRoughTongue"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Mechanical",
@@ -171,7 +181,8 @@
       "fonts": [
         "CCBackBeat",
         "Bitumen"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Heartbeat",
@@ -185,7 +196,8 @@
       "fonts": [
         "CCWildWordsLower Italic",
         "Another"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Explosion",
@@ -201,7 +213,8 @@
         "CCBattleCry",
         "Bitumen",
         "CCShoutOut Heavy"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Cute",
@@ -216,7 +229,8 @@
       "fonts": [
         "CC Wild Words",
         "Anime Ace"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Dark",
@@ -231,7 +245,8 @@
       "fonts": [
         "CCEvilDoings",
         "CCRoughTongue"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Speed",
@@ -246,7 +261,8 @@
       "fonts": [
         "CCBackBeat",
         "CCBattleCry"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Eating",
@@ -261,7 +277,8 @@
       "fonts": [
         "CC Wild Words",
         "Anime Ace"
-      ]
+      ],
+      "lang": "*"
     },
     {
       "group": "Footsteps",
@@ -276,7 +293,460 @@
       "fonts": [
         "CCBackBeat",
         "CC Wild Words"
-      ]
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Boom / Explosion",
+      "keywords": [
+        "boom",
+        "don",
+        "donn",
+        "dokan",
+        "dosun",
+        "doshin",
+        "dogan",
+        "kaboom",
+        "bam",
+        "bang",
+        "blast",
+        "doom"
+      ],
+      "fonts": [
+        "DOMINOS BLAST",
+        "BadaBoom Pro BB",
+        "A.C.M.E. Explosive"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Hit / Punch",
+      "keywords": [
+        "doga",
+        "dogo",
+        "ga",
+        "gan",
+        "baki",
+        "gotsu",
+        "pow",
+        "wham",
+        "smack",
+        "thud",
+        "bonk",
+        "hit",
+        "punch",
+        "bash",
+        "impact"
+      ],
+      "fonts": [
+        "CCGeek Speak",
+        "METAL HEAD",
+        "DARKNESS RISING",
+        "BeatDown BB",
+        "Astounder Squared BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Crash / Break",
+      "keywords": [
+        "gasha",
+        "gashan",
+        "gachan",
+        "bakin",
+        "pakin",
+        "bari",
+        "crash",
+        "smash",
+        "crack",
+        "shatter",
+        "break",
+        "crunch"
+      ],
+      "fonts": [
+        "Speechless",
+        "CRUDEX",
+        "Autodestruct BB",
+        "A.C.M.E. Explosive"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Slash / Cut / Tear",
+      "keywords": [
+        "zan",
+        "zash",
+        "zuba",
+        "dori",
+        "giri",
+        "shaki",
+        "suba",
+        "slash",
+        "slice",
+        "cut",
+        "stab",
+        "rip",
+        "tear"
+      ],
+      "fonts": [
+        "Jackbrush",
+        "BLACKISH",
+        "Brushzerker BB",
+        "Armor Piercing BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Metal / Clang / Click",
+      "keywords": [
+        "ka",
+        "kan",
+        "gakin",
+        "gokin",
+        "kaan",
+        "kiin",
+        "gatan",
+        "gacha",
+        "clang",
+        "clink",
+        "clank",
+        "clack",
+        "click"
+      ],
+      "fonts": [
+        "Kabut Hitam",
+        "Armor Piercing BB",
+        "Android Nation BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Whoosh / Dash",
+      "keywords": [
+        "za",
+        "zaa",
+        "dash",
+        "fi",
+        "fyu",
+        "fu",
+        "whoosh",
+        "woosh",
+        "swoosh",
+        "swish",
+        "fwoosh",
+        "suu",
+        "sutto",
+        "zoom",
+        "rush"
+      ],
+      "fonts": [
+        "HEATERS",
+        "DJB Brit's Thin Pen",
+        "Blowhole BB",
+        "BlackHole BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Engine / Electronic",
+      "keywords": [
+        "bururo",
+        "buroro",
+        "vroom",
+        "vroon",
+        "brrr",
+        "vrrr",
+        "engine",
+        "rev",
+        "mecha"
+      ],
+      "fonts": [
+        "CDX Amraam",
+        "Android Nation BB",
+        "Astrogator BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Friction / Creak",
+      "keywords": [
+        "scrape",
+        "scratch",
+        "scuff",
+        "creak",
+        "screech",
+        "grind",
+        "girii",
+        "kiri",
+        "zaza"
+      ],
+      "fonts": [
+        "SUPERSCRATCHY",
+        "AtlandSketches BB",
+        "Brushzerker BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Sparkle / Shine / Magic",
+      "keywords": [
+        "sharara",
+        "kira",
+        "pika",
+        "gira",
+        "shine",
+        "sparkle",
+        "glimmer",
+        "twinkle",
+        "shimmer"
+      ],
+      "fonts": [
+        "Spicy Chicken",
+        "Arcanum BB",
+        "Astounder Round BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Heartbeat / Tension / Stare",
+      "keywords": [
+        "biku",
+        "bikun",
+        "doki",
+        "kyun",
+        "piku",
+        "jii",
+        "zawa",
+        "yura",
+        "throb",
+        "heartbeat",
+        "stare",
+        "glare"
+      ],
+      "fonts": [
+        "Runescript",
+        "CDX Hollow",
+        "DEARLYDEPARTED",
+        "Astounder Squared BB",
+        "Afterlife BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Rumble / Shake",
+      "keywords": [
+        "furu",
+        "buru",
+        "gogo",
+        "goro",
+        "rumble",
+        "rattle",
+        "shake",
+        "tremble",
+        "quake",
+        "shiver"
+      ],
+      "fonts": [
+        "Mango",
+        "Autodestruct BB",
+        "Astounder Squared BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Flutter / Flap",
+      "keywords": [
+        "pasa",
+        "sara",
+        "hira",
+        "basa",
+        "flutter",
+        "rustle",
+        "swirl",
+        "flap"
+      ],
+      "fonts": [
+        "COOKIESANDCREAM",
+        "Sketchies",
+        "Astounder Round LC BB",
+        "A Brush No"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Touch / Grab / Soft",
+      "keywords": [
+        "gyu",
+        "yuwa",
+        "peta",
+        "beta",
+        "fuwa",
+        "mofu",
+        "squeeze",
+        "hug",
+        "grab",
+        "pet",
+        "rub",
+        "soft"
+      ],
+      "fonts": [
+        "Natural",
+        "CHIPPIE",
+        "SS Soapy hands",
+        "Blambot Casual"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Pop / Bounce",
+      "keywords": [
+        "pon",
+        "pyon",
+        "poyo",
+        "baa",
+        "paa",
+        "gu",
+        "pop",
+        "poof",
+        "boing",
+        "fluff"
+      ],
+      "fonts": [
+        "Imaginary Friend BB",
+        "Telefante",
+        "Astounder Round BB",
+        "AveAve BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Footsteps / Taps",
+      "keywords": [
+        "ta",
+        "tatta",
+        "tot",
+        "toko",
+        "pa",
+        "tap",
+        "pat",
+        "step",
+        "patter",
+        "clop",
+        "stomp"
+      ],
+      "fonts": [
+        "Reminder Notes",
+        "CDX Sidewinder",
+        "Blambot Casual",
+        "Astounder Round BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Clap / Cheer",
+      "keywords": [
+        "paan",
+        "pan",
+        "clap",
+        "applause",
+        "cheer",
+        "yay",
+        "hooray",
+        "tada"
+      ],
+      "fonts": [
+        "DJB Me and My Shadow",
+        "ActionFigure BB",
+        "BigBadBold BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Laugh / Smile",
+      "keywords": [
+        "kusu",
+        "haha",
+        "hehe",
+        "fufu",
+        "kukuku",
+        "giggle",
+        "chuckle",
+        "snicker",
+        "cackle",
+        "teehee"
+      ],
+      "fonts": [
+        "Butterfly Ball",
+        "Bugbear",
+        "CDX Seven Cent Pen",
+        "Astromonkey"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Scream / Shout",
+      "keywords": [
+        "aa",
+        "waa",
+        "gyaa",
+        "kyaa",
+        "uwaa",
+        "scream",
+        "yell",
+        "shout",
+        "shriek"
+      ],
+      "fonts": [
+        "BLANK RIVER",
+        "LHF COMICCAPS",
+        "Always Angry BB",
+        "BigBadBold BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Reaction",
+      "keywords": [
+        "oo",
+        "ah",
+        "eh",
+        "huh",
+        "eek",
+        "ack",
+        "oof",
+        "gaan",
+        "wha"
+      ],
+      "fonts": [
+        "Brightest Melody",
+        "GREATHUNT",
+        "ActionFigure BB",
+        "Anime Ace 2.0 BB"
+      ],
+      "lang": "*"
+    },
+    {
+      "group": "Breath / Sleep",
+      "keywords": [
+        "hi",
+        "haa",
+        "gasp",
+        "sigh",
+        "pant",
+        "huff",
+        "puff",
+        "breathe",
+        "doze",
+        "sleep",
+        "zzz"
+      ],
+      "fonts": [
+        "Burobu",
+        "BOXER SHORTS",
+        "Blambot Casual",
+        "Afterlife BB"
+      ],
+      "lang": "*"
     }
   ]
 }
