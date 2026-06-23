@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CEP-Manifest des SFX Helper für Photoshop 2019 (und ältere/neuere via CEP).
+  Host PHXS/PHSP "[20.0,99.9]" deckt PS 2019 (v20) bis aktuelle Versionen ab.
+  CEFCommandLine aktiviert Node, damit das Panel die gemeinsamen Kernmodule
+  per require() laden kann.
+-->
+<ExtensionManifest Version="8.0" ExtensionBundleId="com.scanlation.sfxhelper.cep"
+    ExtensionBundleVersion="1.0.0"
+    ExtensionBundleName="SFX Helper"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ExtensionList>
+    <Extension Id="com.scanlation.sfxhelper.cep.panel" Version="1.0.0" />
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <Host Name="PHXS" Version="[20.0,99.9]" />
+      <Host Name="PHSP" Version="[20.0,99.9]" />
+    </HostList>
+    <LocaleList>
+      <Locale Code="All" />
+    </LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="9.0" />
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <Extension Id="com.scanlation.sfxhelper.cep.panel">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./index.html</MainPath>
+          <ScriptPath>./host.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>SFX Helper</Menu>
+          <Geometry>
+            <Size><Height>640</Height><Width>290</Width></Size>
+            <MinSize><Height>300</Height><Width>230</Width></MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>

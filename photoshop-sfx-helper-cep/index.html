@@ -1,0 +1,209 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>SFX Helper</title>
+<!--
+  index.html – CEP-Panel (PS 2019+). Gleiches Layout wie die UXP-Version.
+  Farben über CSS-Variablen; main.js liest die echten Photoshop-Theme-Farben
+  (appSkinInfo) und setzt sie zur Laufzeit (Hell/Dunkel).
+-->
+<style>
+  :root {
+    --bg: #323232; --fg: #d6d6d6; --muted-fg: #9a9a9a;
+    --border: #555; --input-bg: #404040; --input-fg: #e8e8e8;
+    --btn-bg: #4b4b4b; --btn-hover: #565656;
+    --accent: #2d8ceb; --accent-fg: #ffffff;
+    --scale: 1;
+  }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font-family: "Segoe UI", Tahoma, sans-serif;
+         font-size: calc(11px * var(--scale)); }
+  .wrap { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .row { display: flex; gap: 6px; align-items: center; }
+  .row > label { flex: 0 0 auto; min-width: 64px; color: var(--muted-fg); }
+  .grow { flex: 1 1 auto; min-width: 0; }
+  .toggles { display: flex; gap: 10px; flex-wrap: wrap; }
+  input, select { background: var(--input-bg); color: var(--input-fg);
+                  border: 1px solid var(--border); border-radius: 4px;
+                  padding: 3px 5px; font-size: inherit; }
+  button { background: var(--btn-bg); color: var(--fg); border: 1px solid var(--border);
+           border-radius: 4px; padding: 4px 8px; font-size: inherit; cursor: pointer; }
+  button:hover { background: var(--btn-hover); }
+  #insertBtn { background: var(--accent); color: var(--accent-fg);
+               border-color: var(--accent); font-weight: 600; }
+  .sec { border-top: 1px solid var(--border); padding-top: 2px; }
+  .sec.hidden-sec { display: none; }
+  .sec-head { cursor: pointer; user-select: none; display: flex; align-items: center;
+              gap: 5px; margin: 3px 0; font-size: inherit; opacity: .9; font-weight: 600;
+              text-transform: uppercase; letter-spacing: .04em; }
+  .sec-head .arrow { font-size: .85em; opacity: .8; width: 9px; display: inline-block; }
+  .sec.collapsed .sec-body { display: none; }
+  .sec-body { display: flex; flex-direction: column; gap: 6px; padding-bottom: 2px; }
+  #preview { width: 100%; height: 90px; border: 1px solid var(--border);
+             border-radius: 4px; background: #d9d9d9; }
+  #suggestions { display: flex; flex-direction: column; gap: 4px; }
+  .sgroup-label { color: var(--muted-fg); }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip { padding: 2px 8px; border: 1px solid #777; border-radius: 10px;
+          cursor: pointer; background: transparent; color: inherit; }
+  .chip.learned { border-color: var(--accent); }
+  .chip.guess { border-style: dashed; }
+  .swatch { width: 18px; height: 18px; border: 1px solid #888; border-radius: 3px; }
+  .hex { width: 72px; }
+  .num { width: 56px; }
+  #fontList { width: 100%; }
+  .presets { display: flex; flex-wrap: wrap; gap: 4px; }
+  .muted { color: var(--muted-fg); }
+  #status { min-height: 14px; color: var(--muted-fg); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2px 0; }
+  #rulesList { display: flex; flex-direction: column; }
+  .rule-row { display: flex; gap: 6px; align-items: flex-start; padding: 3px 0;
+              border-bottom: 1px solid #3a3a3a; }
+  .rule-info { flex: 1 1 auto; min-width: 0; }
+  .rule-group { font-weight: 600; }
+  .rule-meta { font-size: .9em; color: var(--muted-fg); word-break: break-word; }
+  .rule-fonts { cursor: pointer; }
+  .rule-actions { display: flex; gap: 4px; flex: 0 0 auto; align-items: center; }
+  .rule-actions button { padding: 1px 6px; }
+  .rule-tag { font-size: .85em; opacity: .5; }
+  #ruleForm { display: flex; flex-direction: column; gap: 4px;
+              border: 1px solid var(--border); border-radius: 4px; padding: 6px; }
+  #sectionToggles { display: flex; flex-wrap: wrap; gap: 8px 12px; }
+  #sectionToggles label { display: flex; align-items: center; gap: 3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="row">
+    <input id="sfxText" class="grow" type="text" data-i18n-ph="sfx_placeholder" />
+  </div>
+  <div class="row">
+    <button id="insertBtn" class="grow" data-i18n="insert">Insert SFX</button>
+  </div>
+  <div class="toggles">
+    <label><input id="upper" type="checkbox" checked /> <span data-i18n="uppercase">UPPERCASE</span></label>
+    <label><input id="boldChk" type="checkbox" /> <span data-i18n="bold">Bold</span></label>
+    <label><input id="italicChk" type="checkbox" /> <span data-i18n="italic">Italic</span></label>
+  </div>
+
+  <section class="sec" data-sec="preview">
+    <div class="sec-head"><span class="arrow">▾</span><span data-i18n="preview">Preview</span></div>
+    <div class="sec-body"><canvas id="preview"></canvas></div>
+  </section>
+
+  <section class="sec" data-sec="suggest">
+    <div class="sec-head"><span class="arrow">▾</span><span data-i18n="suggestions">Font suggestions</span></div>
+    <div class="sec-body">
+      <div id="suggestions"><span class="muted" data-i18n="no_suggestions"></span></div>
+    </div>
+  </section>
+
+  <section class="sec" data-sec="font">
+    <div class="sec-head"><span class="arrow">▾</span><span data-i18n="font">Font</span></div>
+    <div class="sec-body">
+      <input id="fontSearch" class="grow" type="text" data-i18n-ph="search_font" />
+      <select id="fontList" size="6"></select>
+    </div>
+  </section>
+
+  <section class="sec" data-sec="style">
+    <div class="sec-head"><span class="arrow">▾</span><span data-i18n="size">Size & colors</span></div>
+    <div class="sec-body">
+      <div class="row">
+        <label data-i18n="size">Size</label>
+        <input id="size" class="num" type="number" min="4" max="2000" step="1" />
+        <label data-i18n="outline_width">Outline width</label>
+        <input id="outlineW" class="num" type="number" min="0" max="200" step="1" />
+      </div>
+      <div class="row">
+        <label data-i18n="fill">Fill</label>
+        <span id="fillSwatch" class="swatch"></span>
+        <input id="fill" class="hex" type="text" />
+        <label data-i18n="outline">Outline</label>
+        <span id="outlineSwatch" class="swatch"></span>
+        <input id="outline" class="hex" type="text" />
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" data-sec="shadow">
+    <div class="sec-head"><span class="arrow">▾</span><span data-i18n="shadow">Drop shadow</span></div>
+    <div class="sec-body">
+      <div class="row">
+        <label><input id="shadowChk" type="checkbox" /> <span data-i18n="shadow">Drop shadow</span></label>
+        <span id="shadowSwatch" class="swatch"></span>
+        <input id="shadowColor" class="hex" type="text" />
+      </div>
+      <div class="row">
+        <label data-i18n="shadow_x">Shadow X</label>
+        <input id="shadowX" class="num" type="number" min="-200" max="200" step="1" />
+        <label data-i18n="shadow_y">Shadow Y</label>
+        <input id="shadowY" class="num" type="number" min="-200" max="200" step="1" />
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" data-sec="presets">
+    <div class="sec-head"><span class="arrow">▾</span><span data-i18n="presets">Presets</span></div>
+    <div class="sec-body">
+      <div id="presets" class="presets"></div>
+      <button id="savePreset" class="grow" data-i18n="save_preset">Save current as preset</button>
+    </div>
+  </section>
+
+  <section class="sec" data-sec="rules">
+    <div class="sec-head"><span class="arrow">▾</span><span data-i18n="manage_rules">Manage rules</span></div>
+    <div class="sec-body">
+      <div class="row">
+        <label data-i18n="rule_lang">Rule language</label>
+        <select id="ruleLang" class="grow"></select>
+      </div>
+      <div id="rulesList"></div>
+      <button id="addRuleBtn" class="grow" data-i18n="add_rule">Add rule</button>
+      <button id="restoreBuiltins" class="grow" data-i18n="restore_builtins" style="display:none">Restore built-in rules</button>
+      <div id="ruleForm" style="display:none">
+        <input id="ruleGroup" type="text" data-i18n-ph="rule_group" />
+        <input id="ruleKeywords" type="text" data-i18n-ph="rule_keywords" />
+        <input id="ruleFonts" type="text" data-i18n-ph="rule_fonts" />
+        <div class="row">
+          <button id="ruleSave" class="grow" data-i18n="save">Save</button>
+          <button id="ruleCancel" class="grow" data-i18n="cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" data-sec="view">
+    <div class="sec-head"><span class="arrow">▾</span><span data-i18n="view">View</span></div>
+    <div class="sec-body">
+      <div class="row">
+        <label data-i18n="ui_scale">UI scale</label>
+        <input id="uiScale" class="num" type="number" min="70" max="200" step="10" />
+        <span class="muted">%</span>
+      </div>
+      <div class="sgroup-label" data-i18n="visible_sections">Show sections</div>
+      <div id="sectionToggles"></div>
+    </div>
+  </section>
+
+  <hr />
+
+  <div class="row">
+    <button id="importBtn" class="grow" data-i18n="import">Import</button>
+    <button id="exportBtn" class="grow" data-i18n="export">Export</button>
+    <button id="resetBtn" class="grow" data-i18n="reset">Reset</button>
+  </div>
+  <div class="row">
+    <label data-i18n="ui_lang">Interface language</label>
+    <select id="uiLang" class="grow"></select>
+  </div>
+
+  <div id="status"></div>
+</div>
+
+<script src="./lib/CSInterface.js"></script>
+<script src="./main.js"></script>
+</body>
+</html>
